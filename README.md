@@ -112,7 +112,7 @@ Loki, Alloy, and syslog-ng each rely on their own configuration files that speci
     ```
 
     You can now login to your Grafana instance and under the "Expore" > "Logs" section in the sidebar, you can should see your two test log messages show up under your Loki:
-    [Screenshot of Grafana  web interface showing successful test syslog messages sent from syslog-test.py scritpt.](/media/syslog-py_test.png?raw=true)
+    ![Screenshot of Grafana  web interface showing successful test syslog messages sent from syslog-test.py scritpt.](/media/syslog-py_test.png?raw=true)
 
 
 11. Shutdown the stack:
