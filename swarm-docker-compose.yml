@@ -1,15 +1,3 @@
-# sudo mkdir /mnt/swarm/volumes/grafana-data
-
-# sudo mkdir /mnt/swarm/volumes/loki-data
-# sudo mkdir /mnt/swarm/volumes/loki-config
-# sudo nano /mnt/swarm/volumes/loki-config/loki-config.yml
-
-# sudo mkdir /mnt/swarm/volumes/alloy-config/
-# sudo nano /mnt/swarm/volumes/alloy-config/config.alloy
-
-# sudo mkdir /mnt/swarm/volumes/syslog-ng-config/
-# sudo nano /mnt/swarm/volumes/syslog-ng-config/syslog-ng.conf
-
 services:
   grafana:
     image: grafana/grafana:11.2.0
