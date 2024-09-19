@@ -1,0 +1,61 @@
+# Sourced primarily from:
+# https://raw.githubusercontent.com/grafana/loki/v3.1.1/cmd/loki/loki-local-config.yaml
+
+auth_enabled: false
+
+limits_config:
+  allow_structured_metadata: true # Set for Explore Logs plugin
+  volume_enabled: true            # Set for Explore Logs plugin
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+
+common:
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: inmemory
+  path_prefix: /tmp/loki
+  replication_factor: 1
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+storage_config:
+  tsdb_shipper:
+    active_index_directory: /tmp/loki/index
+    cache_location: /tmp/loki/index_cache
+  filesystem:
+    directory: /tmp/loki/chunks
+
+# Set Loki alerting evaluation criteria and config items.
+ruler:
+  alertmanager_url: http://localhost:9093
+
+# protobuf > JSON for performance.
+frontend:
+  encoding: protobuf
+  address: 0.0.0.0
+
+pattern_ingester:
+  enabled: true # Set for Explore Logs plugin
+
+# By default, Loki will send anonymous, but uniquely-identifiable usage and configuration
+# analytics to Grafana Labs.
+analytics:
+  reporting_enabled: false

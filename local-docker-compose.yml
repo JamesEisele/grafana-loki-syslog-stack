@@ -1,0 +1,51 @@
+services:
+  grafana:
+    image: grafana/grafana:11.2.0
+    user: '1000'
+    ports:
+      - 3000:3000/tcp
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_INSTALL_PLUGINS=https://storage.googleapis.com/integration-artifacts/grafana-lokiexplore-app/grafana-lokiexplore-app-latest.zip;grafana-lokiexplore-app
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.1.1
+    ports:
+      - 3100:3100
+    volumes:
+      - loki-data:/loki
+      - ./loki-config.yml:/etc/loki/local-config.yml:ro
+    command: -config.file=/etc/loki/local-config.yml
+    restart: unless-stopped
+  
+  alloy:
+    image: grafana/alloy:v1.3.1
+    ports:
+      - 1514:1514/tcp # syslog ingestion
+      - 1514:1514/udp # syslog ingestion
+      - 12345:12345   # management UI
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy
+    command: >
+      run --disable-reporting --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  syslog-ng:
+    image: balabit/syslog-ng:4.8.0
+    volumes:
+      - ./syslog-ng.conf:/etc/syslog-ng/syslog-ng.conf
+    ports:
+      - 514:514/udp  # Syslog UDP
+      - 514:601/tcp  # Syslog TCP
+      # - 6514:6514/tcp # Syslog TLS  # Out scope for this project.
+    depends_on:
+      - alloy
+    restart: unless-stopped
+
+volumes:
+  grafana-data:
+  loki-data:

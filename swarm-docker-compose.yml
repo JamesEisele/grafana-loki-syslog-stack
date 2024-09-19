@@ -1,0 +1,93 @@
+# sudo mkdir /mnt/swarm/volumes/grafana-data
+
+# sudo mkdir /mnt/swarm/volumes/loki-data
+# sudo mkdir /mnt/swarm/volumes/loki-config
+# sudo nano /mnt/swarm/volumes/loki-config/loki-config.yml
+
+# sudo mkdir /mnt/swarm/volumes/alloy-config/
+# sudo nano /mnt/swarm/volumes/alloy-config/config.alloy
+
+# sudo mkdir /mnt/swarm/volumes/syslog-ng-config/
+# sudo nano /mnt/swarm/volumes/syslog-ng-config/syslog-ng.conf
+
+services:
+  grafana:
+    image: grafana/grafana:11.2.0
+    user: '1000'
+    ports:
+      - 3000:3000/tcp
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_INSTALL_PLUGINS=https://storage.googleapis.com/integration-artifacts/grafana-lokiexplore-app/grafana-lokiexplore-app-latest.zip;grafana-lokiexplore-app
+
+  loki:
+    image: grafana/loki:3.1.1
+    ports:
+      - 3100:3100
+    volumes:
+      - loki-config:/docker-config:ro
+      - loki-data:/loki
+    command: -config.file=/docker-config/loki-config.yml
+
+  alloy:
+    image: grafana/alloy:v1.3.1
+    ports:
+      - 1514:1514/tcp # syslog ingestion
+      - 1514:1514/udp # syslog ingestion
+      - 12345:12345   # management UI
+    volumes:
+      - alloy-config:/docker-config:ro
+    command: >
+      run --disable-reporting --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /docker-config/config.alloy
+    depends_on:
+      - loki
+
+  syslog-ng:
+    image: balabit/syslog-ng:4.8.0
+    volumes:
+      - syslog-ng-config:/docker-config:ro
+    ports:
+      - 514:514/udp  # Syslog UDP
+      - 514:601/tcp  # Syslog TCP
+      # - 6514:6514/tcp # Syslog TLS  # Out scope for this project.
+    command: >
+      -f /docker-config/syslog-ng.conf
+    depends_on:
+      - alloy
+
+volumes:
+  grafana-data:
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.25.100.220,rw"
+      device: ":/mnt/swarm/volumes/grafana-data"
+
+  loki-config:
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.25.100.220,rw"
+      device: ":/mnt/swarm/volumes/loki-config"
+
+  loki-data:
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.25.100.220,rw"
+      device: ":/mnt/swarm/volumes/loki-data"
+
+  alloy-config:
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.25.100.220,rw"
+      device: ":/mnt/swarm/volumes/alloy-config/"
+
+  syslog-ng-config:
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.25.100.220,rw"
+      device: ":/mnt/swarm/volumes/syslog-ng-config/"
