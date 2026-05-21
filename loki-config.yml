@@ -1,5 +1,5 @@
 # Sourced primarily from:
-# https://raw.githubusercontent.com/grafana/loki/v3.1.1/cmd/loki/loki-local-config.yaml
+# https://raw.githubusercontent.com/grafana/loki/v3.7.2/cmd/loki/loki-local-config.yaml
 
 auth_enabled: false
 
@@ -12,12 +12,16 @@ server:
   grpc_listen_port: 9096
 
 common:
+  instance_addr: 127.0.0.1
   ring:
-    instance_addr: 127.0.0.1
     kvstore:
       store: inmemory
   path_prefix: /tmp/loki
   replication_factor: 1
+  storage:
+    filesystem:
+      chunks_directory: /tmp/loki/chunks
+      rules_directory: /tmp/loki/rules
 
 query_range:
   results_cache:
