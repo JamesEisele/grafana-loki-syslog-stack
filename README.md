@@ -27,7 +27,7 @@ Grafana offers three ways to ingest logs:
 2. **Grafana Agent**: collects logs plus everything else. Deprecated and replaced by Alloy.
 3. **Grafana Promtail**: feature complete log collector.
 
-For this stack, we're going with Ally for it's going to be better supported going forward, even if we don't need the whole kitchen sink it provides.
+For this stack, we're going with Alloy for it's going to be better supported going forward, even if we don't need the whole kitchen sink it provides.
 
 With that said, it was a lot easier wrap my head around deploying syslog for Loki using Promtail initially so I've included the relevant config files and docker service info in this repo for reference. 
 
@@ -76,9 +76,21 @@ Loki, Alloy, and syslog-ng each rely on their own configuration files that speci
 
 3. Review your Alloy config.
     - In the `loki.write "default"` section, you'll need to update your endpoint `url` address if your Loki container isn't going to be running on the same host as Alloy. In a swarm setup, you could get by if you wanted to use your swarm manager's IP but you might consider a keepalived virtual IP shared across your swarm managers if you have more than one manager.
+        ```diff
+            loki.write "default" {
+                endpoint {
+        -                url = "http://localhost:3100/loki/api/v1/push"
+        +                url = "http://loki.mydomain.com:3100/loki/api/v1/push"
+                }
+        ```
+
 
 4. Review your syslog-ng config file `syslog-ng.conf`.
     - Similar to Step 3, you'll need to update the `destination d_alloy` address so that it's pointing to the same host IP or address that's running your Alloy container.
+        ```diff
+        - syslog("alloy.example.com" transport("tcp") port(1514));
+        + syslog("alloy.mydomain.com" transport("tcp") port(1514));
+        ```
 
 5. Review your `*-docker-compose.yml` file which will define how Docker will deploy your services.
     - Included in the repo are two separate examples: 
@@ -99,19 +111,19 @@ Loki, Alloy, and syslog-ng each rely on their own configuration files that speci
 
 9. Login to Grafana with the default credentials `admin`/`admin` to configure Loki as a datasource. Since we're not using Docker's built-in network, you'll need to specify your actual host's IP address (e.g., `10.72.5.29`). Verify that when you save the datasource, the integrated test in Grafana shows that it is reachable.
 
-10. (Optional) Test that syslog-ng is properly relaying TCP and UDP syslog messages to Promtail. You'll need Python v3.7 or higher installed (check with `python3 --version`):
+10. (Optional) Test that syslog-ng is properly relaying syslog messages to Alloy/Loki. You'll need Python v3.7 or higher installed (check with `python3 --version`):
     ```shell
     # Setup a virtual environment (Linux variant):
     $ python3 -m venv venv
     $ source venv/bin/activate
     (venv) $ pip install -r requirements.txt
-    # Run the script to send the syslog messages (you'll need to configure your Promtail host and IP variables in the `syslog-test.py` script file):
+    # Default test: send TCP and UDP syslog messages to port 514:
     (venv) $ python3 syslog-test.py -l syslog-ng.example.com
      > Sent syslog message whatvia TCP to syslog-ng.example.com:514
      > Sent syslog message via UDP to syslog-ng.example.com:514
     ```
 
-    You can now login to your Grafana instance and under the "Expore" > "Logs" section in the sidebar, you can should see your two test log messages show up under your Loki:
+    You can now login to your Grafana instance and under the "Explore" > "Logs" section in the sidebar, you should see your test log messages show up under Loki:
     ![Screenshot of Grafana  web interface showing successful test syslog messages sent from syslog-test.py scritpt.](/media/syslog-py_test.png?raw=true)
 
 
@@ -136,5 +148,6 @@ sudo nano /mnt/swarm/volumes/syslog-ng-config/syslog-ng.conf
 As mentioned above, it might make sense for you to deploy this stack with Docker [Secrets](https://docs.docker.com/engine/swarm/secrets/) an/or Docker [Configs](https://docs.docker.com/engine/swarm/configs/) to streamline deployments.
 
 # Sources
+- [Grafana Loki in Docker Swarm](https://medium.com/@mrschneider/grafana-loki-in-docker-swarm-78bfa6a761fa): Great guide around getting Loki setup in swarm. Touches on some of the nuances of Loki's documentation that are good to keep in mind for any deployment.
 - https://gist.github.com/xtavras Githug gists for Python syslog testing used here to verify syslog-ng relay functionality with Promtail.
 - [Convert a Promtail config to an Alloy config](https://grafana.com/docs/alloy/latest/set-up/migrate/from-promtail/).
