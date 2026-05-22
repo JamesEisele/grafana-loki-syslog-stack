@@ -6,6 +6,9 @@ services:
       - 3000:3000/tcp
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - loki
     restart: unless-stopped
 
   loki:

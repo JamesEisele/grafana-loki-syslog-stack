@@ -99,7 +99,7 @@ Loki, Alloy, and syslog-ng each rely on their own configuration files that speci
 
     If you need to troubleshoot a specific service, you can either show the logs for the container with `docker logs <container name>` or by exec'ing into the container to inspect things further.
 
-8. Login to Grafana with the default credentials `admin`/`admin` to configure Loki as a datasource. Verify that when you save the datasource, the integrated test in Grafana shows that it is reachable.
+8. Login to Grafana with the default credentials `admin`/`admin` and navigate to **Drilldown** > **Logs** to view the Loki logs setup. We automatically provision Loki as a datasource within Grafana when the Grafana service starts.
 
 9. (Optional) Test that syslog-ng is properly relaying syslog messages to Alloy/Loki. You'll need Python v3.7 or higher installed (check with `python3 --version`):
     ```shell
@@ -156,6 +156,7 @@ If you're deploying this stack via Swarm, the easiest (but sketchy) way to get u
 
 ```shell
 sudo mkdir /mnt/swarm/volumes/grafana-data
+sudo mkdir /mnt/swarm/volumes/grafana-datasources
 sudo mkdir /mnt/swarm/volumes/loki-data
 sudo mkdir /mnt/swarm/volumes/loki-config
 sudo nano /mnt/swarm/volumes/loki-config/loki-config.yml
@@ -163,6 +164,7 @@ sudo mkdir /mnt/swarm/volumes/alloy-config/
 sudo nano /mnt/swarm/volumes/alloy-config/config.alloy
 sudo mkdir /mnt/swarm/volumes/syslog-ng-config/
 sudo nano /mnt/swarm/volumes/syslog-ng-config/syslog-ng.conf
+sudo cp grafana/provisioning/datasources/loki.yml /mnt/swarm/volumes/grafana-datasources/loki.yml
 ```
 
 ### Swarm-specific commands

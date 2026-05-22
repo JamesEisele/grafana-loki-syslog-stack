@@ -8,6 +8,9 @@ services:
       - logging-net
     volumes:
       - grafana-data:/var/lib/grafana
+      - grafana-datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - loki
 
   loki:
     image: docker.io/grafana/loki:3.7.2
@@ -62,6 +65,13 @@ volumes:
       type: "nfs"
       o: "addr=10.25.100.220,rw"
       device: ":/mnt/swarm/volumes/grafana-data"
+
+  grafana-datasources:
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.25.100.220,rw"
+      device: ":/mnt/swarm/volumes/grafana-datasources"
 
   loki-config:
     driver: local
