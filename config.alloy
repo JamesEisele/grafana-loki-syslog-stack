@@ -1,7 +1,7 @@
 loki.source.syslog "syslog" {
         listener {
                 address               = "0.0.0.0:1514"
-                idle_timeout          = "1m0s"
+                idle_timeout          = "30m0s"
                 label_structured_data = true
                 labels                = {
                         job = "syslog",
@@ -46,8 +46,11 @@ loki.source.file "alloy_syslog_relay_varlogs" {
 }
 
 loki.write "default" {
+        // Standalone Docker compose endpoint example using Docker service name DNS.
+        // You may need to adjust this if you change service naming, change Docker network
+        // config, setup a reverse proxy, etc.
         endpoint {
-                url = "http://localhost:3100/loki/api/v1/push"
+                url = "http://grafana-loki-log-stack-loki-1:3100/loki/api/v1/push"
         }
         external_labels = {}
 }
