@@ -1,6 +1,8 @@
 .DS_Store
 
-grafana/
+grafana/*
+!grafana/provisioning/
+!grafana/provisioning/**
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
