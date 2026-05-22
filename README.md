@@ -5,7 +5,7 @@ With this deployment you'll have a full logging stack that will ingest syslog vi
 If you want to skip the background and just get Loki up and running, you can go to the [Configuration section](#configuration) below or just reference the relevant `*-docker-compose.yml` file alongside the individual service config files.
 
 # Why
-The purpose of this repo is establish a simple stack with straightfoward service configs to ingest syslog data into Loki while also giving greater context to the configuration process. It took me longer than I wanted to get an MVP for Loki up and running based on available guides, including Grafana's own documentation and tutorials. These sources were often outdated in sneaky ways, glossed over critical config items, or even misrepresented service capabilities.
+The purpose of this repo is to establish a simple stack with straightforward service configs to ingest syslog data into Loki while also giving greater context to the configuration process. It took me longer than I wanted to get an MVP for Loki up and running based on available guides, including Grafana's own documentation and tutorials. These sources were often outdated in sneaky ways, glossed over critical config items, or even misrepresented service capabilities.
 
 Grafana recommends deploying Loki to production with k8s and doesn't provide an alternate self-hosted deployment strategy, even to just setup a test environment.
 
@@ -15,9 +15,9 @@ With so many moving parts that must be in a base functional state before you can
 ## Log storage
 You can get away with storing all ingested Loki log files locally on your host's filesystem but [Grafana recommends against it](https://grafana.com/docs/loki/latest/operations/storage/). It's okay for a basic evaluation.
 
-I'd recommend using an S3-compatible object store once your comfortable with your base install. Popular selfhosted S3 options include:
+I'd recommend using an S3-compatible object store once you're comfortable with your base install. Popular selfhosted S3 options include:
 - [SeaweedFS](https://github.com/seaweedfs/seaweedfs) (recommended): Terminology makes getting started a little harder than other S3 options but easy to get past, performant, no need for separate SSD metadata pool, 1st-party web GUI, good development community.
-- [Garage](https://garagehq.deuxfleurs.fr/): Easy to get started, straightfoward architecture, 1st-party web GUI in development (no ETA), popular community web GUI is unmaintained, performance is heavily tied to a separate metadata store that should be on performant SSDs (can be separated from regular data pool).
+- [Garage](https://garagehq.deuxfleurs.fr/): Easy to get started, straightforward architecture, 1st-party web GUI in development (no ETA), popular community web GUI is unmaintained, performance is heavily tied to a separate metadata store that should be on performant SSDs (can be separated from regular data pool).
 - [RustFS](https://rustfs.com/): Easy to get started, 1st-party web GUI if needed, questionable license in the long-term, concerns about poor quality vibe coded features.
 
 ## Grafana Alloy vs. Grafana Agent vs. Promtail
@@ -28,7 +28,7 @@ Grafana offers x3 ways to ingest logs:
 
 For this stack, we're using Alloy as it's going to be better supported going forward, even if we don't need the bulk of its features.
 
-With that said, it was a lot easier wrap my head around deploying syslog for Loki using Promtail initially so I've included the relevant config files and docker service info in this repo for reference. 
+With that said, it was a lot easier to wrap my head around deploying syslog for Loki using Promtail initially so I've included the relevant config files and docker service info in this repo for reference. 
 
 ## Alloy syslog 
 - Alloy only plays nice with RFC syslog messages. When you encounter cases outside this scope, you'll need to relay syslog messages using a service like syslog-ng or rsyslog front of Alloy which can ingest unsupported logs and output them in RFC format before forwarding them to Alloy over TCP.
@@ -108,13 +108,13 @@ Loki, Alloy, and syslog-ng each rely on their own configuration files that speci
     $ source venv/bin/activate
     (venv) $ pip install -r requirements.txt
     # Default test: send TCP and UDP syslog messages to port 514:
-    (venv) $ python3 syslog-test.py -l locahost
+    (venv) $ python3 syslog-test.py -l localhost
     > Sent syslog message via TCP to localhost:514
     > Sent syslog message via UDP to localhost:514
     ```
 
     You can now login to your Grafana instance and under the "Explore" > "Logs" section in the sidebar, you should see your test log messages show up under Loki:
-    ![Screenshot of Grafana  web interface showing successful test syslog messages sent from syslog-test.py scritpt.](/media/syslog-py_test.png?raw=true)
+    ![Screenshot of Grafana  web interface showing successful test syslog messages sent from syslog-test.py script.](/media/syslog-py_test.png?raw=true)
 
 10. Shutdown the stack:
     ```shell
@@ -122,7 +122,7 @@ Loki, Alloy, and syslog-ng each rely on their own configuration files that speci
     ```
 
 # Next steps
-With this basic Loki log stack up and running, there's a few easy wins that'll improve the stack's resilence and help with general quality of life:
+With this basic Loki log stack up and running, there's a few easy wins that'll improve the stack's resilience and help with general quality of life:
 - Configure Loki to store logs on a remote S3 object store (see earlier notes for recommendations).
 - Setup log rotation/retention for better storage management of long-lived log files.
 - Integrate the stack with a reverse proxy like Traefik or Caddy. This is the easiest path to get certs for hostnames like `syslog.example.com` as well as allow you properly configure and handle TLS syslog.
@@ -130,7 +130,7 @@ With this basic Loki log stack up and running, there's a few easy wins that'll i
 - Setup relevant Grafana dashboards with Loki log references so you're not always hunting for service logs in Grafana.
 
 # Docker Swarm caveats and notes
-On the off chance that you want to run this setup in a Docker Swarm environment, the regular Docker compose details should get you most of the way towards a running Loki stack. There's also an included `swarm-docker-compose.yml` version with some specific Swarm sytax and config items.
+On the off chance that you want to run this setup in a Docker Swarm environment, the regular Docker compose details should get you most of the way towards a running Loki stack. There's also an included `swarm-docker-compose.yml` version with some specific Swarm syntax and config items.
 
 Loki logs was one of the first stacks I deployed to my cluster environment which helped surface a lot of headaches related to Swarm itself. If this project seems like a good starting point to get into a more decentralized compute setup, I'd warn against new users from deploying Swarm. It's an unmaintained and poorly supported extension of Docker with a narrowly valid usecase that is easy to fall out of. You're likely better off learning K8s or K3s even if you don't need the full complexity they offer.
 - Distributed storage in Swarm is largely an unsolved problem, especially for smaller clusters. You might be able to get by with questionable NFS or SMB shares mounted across hosts but these aren't POSIX compliant and will likely result in data corruption over the long term.
@@ -152,7 +152,7 @@ qqicqjamxxut69 *   host-1     Ready     Active         Leader           27.1.2
 ```
 
 ### Storage
-If you're deploying this stack via Swarm, the easiest (but sketchy) way to get up and running is to store your named volumes and config files in a remote NFS share that's accessible on all nodes. You might also think about putting your `swarm-docker-compose.yml` file on an NFS share accesible to all managers.
+If you're deploying this stack via Swarm, the easiest (but sketchy) way to get up and running is to store your named volumes and config files in a remote NFS share that's accessible on all nodes. You might also think about putting your `swarm-docker-compose.yml` file on an NFS share accessible to all managers.
 
 ```shell
 sudo mkdir /mnt/swarm/volumes/grafana-data
@@ -193,11 +193,11 @@ Docker Swarm references compose stacks and services differently with its interna
 Docker Swarm also makes use of overlay networks so that services can talk with each other across the swarm cluster. The example compose file for swarm has all the services within the same overlay network. However, I did leave the `ports` section for each service exposed so that users can easily verify connectivity and service status. In a production deployment, these should be removed and/or locked down so that only services attached to the overlay network can ship logs. A reverse proxy like Traefik would also be a good idea to stand between clients shipping their logs and Loki.
 
 ### Secrets and configs
-A "proper" production deployment of this stack in Swarm would use Docker [Secrets](https://docs.docker.com/engine/swarm/secrets/) an/or Docker [Configs](https://docs.docker.com/engine/swarm/configs/) to better handle sensitive and shared configuration files.
+A "proper" production deployment of this stack in Swarm would use Docker [Secrets](https://docs.docker.com/engine/swarm/secrets/) and/or Docker [Configs](https://docs.docker.com/engine/swarm/configs/) to better handle sensitive and shared configuration files.
 
 I avoided exploring that here as I've found their implementations too restrictive considering there's better tools to handle this if you want to take on extra complexity with something like Hashicorp Vault.
 
 # Sources
 - [Grafana Loki in Docker Swarm](https://medium.com/@mrschneider/grafana-loki-in-docker-swarm-78bfa6a761fa): Great guide around getting Loki setup in swarm. Touches on some of the nuances of Loki's documentation that are good to keep in mind for any deployment.
-- https://gist.github.com/xtavras Githug gists for Python syslog testing used here to verify syslog-ng relay functionality with Promtail.
+- https://gist.github.com/xtavras Github gists for Python syslog testing used here to verify syslog-ng relay functionality with Promtail.
 - [Convert a Promtail config to an Alloy config](https://grafana.com/docs/alloy/latest/set-up/migrate/from-promtail/).
